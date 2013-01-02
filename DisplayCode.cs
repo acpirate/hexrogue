@@ -13,6 +13,10 @@ public class DisplayCode : MonoBehaviour {
 	public GameObject gameCamera;
 	public GameObject stairsdown;
 	public GameObject monster;
+	public GameObject food;
+	public GameObject stairsup;
+	//magic number to adjust camera so player stays centered in screen with gui
+	public int cameraOffset;
 	       
 	
 	void Awake () {
@@ -35,60 +39,69 @@ public class DisplayCode : MonoBehaviour {
 		//height offset is used to make sure the wall tiles are put in the correct position relative to the space tiles
 		float heightoffset=0;
 		
-		int levelSizeX=Level.levelSizeX;
-		int levelSizeY=Level.levelSizeY;
 		//iterate over level and draw each tile and features
-		for (int counterX=0;counterX<levelSizeX;counterX++) {
-			for (int counterY=0;counterY<levelSizeY;counterY++) {
-				tempTile=null;
-				//draw level tiles
-				switch (dungeon.GetComponent<DungeonCode>().getTileAtLocation(levelToDraw,new Vector2((float) counterX, (float) counterY))) {
-					
-					case TILETYPE.SPACE:
-						tileObject=spacetile;
-						heightoffset=0;
-						break;
-					case TILETYPE.WALL:
-						tileObject=walltile;
-						heightoffset=.5f;
-						break;
-				}	
-					
-				
-				tempTile=(GameObject) Instantiate(tileObject,new Vector3(0,0,0),transform.rotation);
-				
-				
-				tempTile.transform.Rotate(new Vector3(90,0,90));
-				Vector2 tileScreenLocation = translateMapPositionToScreenCoords(new Vector2(counterX,counterY));
-				tempTile.transform.position+=new Vector3(tileScreenLocation.x,heightoffset,tileScreenLocation.y);
-				
-				dungeon.GetComponent<DungeonCode>().setDisplayObjectAtLocation(levelToDraw,new Vector2(counterX,counterY),tempTile);
-				
-				Feature tempFeature=dungeon.GetComponent<DungeonCode>().getFeatureAtLocation(levelToDraw,new Vector2((float) counterX, (float) counterY));
-				
-				if (tempFeature!=null) {			
-					switch (tempFeature.getFeatureType()) {
-				
-						case FEATURETYPE.STAIRSDOWN:
-							tempFeature.setFeatureDisplayObject((GameObject) Instantiate(stairsdown,new Vector3(tileScreenLocation.x,.3f,tileScreenLocation.y),transform.rotation));
-						break;
-					}
-				}
-				
-				
-			}	
+		
+		
+		List<Location> levelLocations=dungeon.GetComponent<DungeonCode>().getAllLevelLocations(levelToDraw);
+		
+		
+		foreach(Location location in levelLocations) {
 			
-		}
-	}	
+			tempTile=null;
+			//draw level tiles
+			switch (location.getTile()) {
+				
+				case TILETYPE.SPACE:
+					tileObject=spacetile;
+					heightoffset=0;
+					break;
+				case TILETYPE.WALL:
+					tileObject=walltile;
+					heightoffset=.5f;
+					break;
+			}	
+				
+			
+			tempTile=(GameObject) Instantiate(tileObject,new Vector3(0,0,0),transform.rotation);
+			
+			
+			tempTile.transform.Rotate(new Vector3(90,0,90));
+			Vector2 tileScreenLocation = translateMapPositionToScreenCoords(location.getCoords());
+			tempTile.transform.position+=new Vector3(tileScreenLocation.x,heightoffset,tileScreenLocation.y);
+			
+			location.setLocationDisplayObject(tempTile);
+			//draw features
+			Feature tempFeature=location.getFeature();
+			
+			if (tempFeature!=null) {			
+				switch (tempFeature.getFeatureType()) {
+			
+					case FEATURETYPE.STAIRSDOWN:
+						tempFeature.setFeatureDisplayObject((GameObject) Instantiate(stairsdown,new Vector3(tileScreenLocation.x,.3f,tileScreenLocation.y),transform.rotation));
+					break;
+					case FEATURETYPE.STAIRSUP:
+						tempFeature.setFeatureDisplayObject((GameObject) Instantiate(stairsup,new Vector3(tileScreenLocation.x,.5f,tileScreenLocation.y),transform.rotation));
+						tempFeature.getDisplayObject().transform.Rotate(new Vector3(-90,0,0));
+					break;					
+				}
+			}
+			//draw items
+			DrawItemsOnFloor(MainGameCode.getLevel(),new Vector2(location.getCoords().x,location.getCoords().y));
+			
+		}	
+		
+	}
 	
 	public void DrawAgents(int level) {
 		List<Agent> Agents = dungeon.GetComponent<DungeonCode>().getAgents(level);
 				
 
 		foreach (Agent agentitem in Agents) {
-			
+			if (agentitem.getDisplayObject()==null) {
+				agentitem.setDisplayObject(getDisplayObject(agentitem.getAgentType()));
+			}	
 			if (agentitem.getDisplayObject()!=null) {
-				Vector2 agentScreenPosition = translateMapPositionToScreenCoords(agentitem.getLocation());
+				Vector2 agentScreenPosition = translateMapPositionToScreenCoords(agentitem.getLocation().getCoords());
 				agentitem.getDisplayObject().transform.position=new Vector3(agentScreenPosition.x,1,agentScreenPosition.y);
 			}	
 		}	
@@ -141,25 +154,61 @@ public class DisplayCode : MonoBehaviour {
 		case FEATURETYPE.STAIRSDOWN:
 			tempGameObject=(GameObject) Instantiate(stairsdown);
 			break;
+		case FEATURETYPE.STAIRSUP:
+			tempGameObject=(GameObject) Instantiate(stairsup);
+			break;
 		}
+		
 		
 		return tempGameObject;
 		
 	}	
+	
+	public GameObject getDisplayObject(ITEMTYPE item) {
+		GameObject tempGameObject=null;
+		
+		switch (item) {
+			case ITEMTYPE.FOOD:
+			
+			tempGameObject=(GameObject) Instantiate(food);
+			//adjust the y position so the object is drawn above the floor
+			tempGameObject.transform.position=new Vector3(0,.5f,0);
+			break;
+		}
+		
+		return tempGameObject;
+	}	
+	
 	
 	public void centerCameraAbovePlayer() {
 		List<Agent> Agents = dungeon.GetComponent<DungeonCode>().getAgents(MainGameCode.getLevel());
 		
 		foreach (Agent agentitem in Agents) {
 			if (agentitem.getName()=="player") {
-				Vector2 translatedLocation = translateMapPositionToScreenCoords(agentitem.getLocation());
-				gameCamera.transform.position=new Vector3(translatedLocation.x,gameCamera.transform.position.y,translatedLocation.y);	
+				Vector2 translatedLocation = translateMapPositionToScreenCoords(agentitem.getLocation().getCoords());
+				gameCamera.transform.position=new Vector3(translatedLocation.x-cameraOffset,gameCamera.transform.position.y,translatedLocation.y);	
 			}
 			
 		}
 		
 		
 			
+	}
+	
+	public void DrawItemsOnFloor(int level, Vector2 coords) {
+		List<Item> itemsToDraw=dungeon.GetComponent<DungeonCode>().getItemsAtLocation(level,coords);
+		
+		foreach(Item item in itemsToDraw) {
+			if (item.getItemDisplayObject()==null) {
+				GameObject tempDisplayObject=getDisplayObject(item.getItemType());
+				Vector2 itemCoords=translateMapPositionToScreenCoords(coords);
+				tempDisplayObject.transform.position+=new Vector3(itemCoords.x,0,itemCoords.y);
+				item.setItemDisplayObject(tempDisplayObject);
+			}	
+			
+			
+		}	
+		
 	}	
 	
 	public void DestroyLevelDisplay(int currentLevel) {
@@ -168,23 +217,25 @@ public class DisplayCode : MonoBehaviour {
 		print ("destroying level "+currentLevel);	
 		
 		foreach (Agent agent in Agents ) {
-			if (!(agent.getDisplayObject()==null)) Destroy(agent.getDisplayObject());	
+			if (agent.getDisplayObject()!=null && agent.getAgentType()!=AGENTTYPE.PLAYER) Destroy(agent.getDisplayObject());	
 		}
+
+		List<Location> levelLocations=dungeon.GetComponent<DungeonCode>().getAllLevelLocations(currentLevel);
 		
-		int levelSizeX=Level.levelSizeX;
-		int levelSizeY=Level.levelSizeY;
-		//iterate over level and draw each tile and features
-		for (int counterX=0;counterX<levelSizeX;counterX++) {
-			for (int counterY=0;counterY<levelSizeY;counterY++) {	
-				Destroy(dungeon.GetComponent<DungeonCode>().getDisplayObjectAtLoction(currentLevel,new Vector2(counterX,counterY)));
+		foreach(Location location in levelLocations) {
+			Destroy(location.getLocationDisplayObject());	
+			
+			Feature tempFeature=location.getFeature();
+			
+			if (!(tempFeature==null)) Destroy(tempFeature.getDisplayObject());
 				
-				Feature tempFeature=dungeon.GetComponent<DungeonCode>().getFeatureAtLocation(currentLevel,new Vector2(counterX,counterY));
-				
-				if (!(tempFeature==null)) Destroy(tempFeature.getDisplayObject());
-				
-			}
+			List<Item> tempitems=location.getItems();
+			
+			foreach(Item item in tempitems) {
+				Destroy(item.getItemDisplayObject());
+							
+			}			
 		}	
-		
 	}	
 	
 	// returns the vector 2 of the screen position of a tile

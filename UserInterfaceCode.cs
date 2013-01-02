@@ -1,25 +1,36 @@
 using UnityEngine;
 using System.Collections;
 
-public enum COMMAND { UPLEFT, UP, UPRIGHT, DOWNLEFT, DOWN, DOWNRIGHT, WAIT, DESCENDSTAIRS, ASCENDSTAIRS };
+public enum COMMAND { UPLEFT, UP, UPRIGHT, DOWNLEFT, DOWN, DOWNRIGHT, WAIT, DESCENDSTAIRS, ASCENDSTAIRS, PICKUP, DROP };
 
 public class UserInterfaceCode : MonoBehaviour {
 	
 	public GameObject dungeon;
+	public GameObject messageLine;
+	public GameObject main;
 	
+	int screenHeight=Screen.height;
+	int screenWidth=Screen.width;
 	
 	bool isPlayerTurn=false;
 	
     // Use this for initialization
-
+	
+	void Awake() {
+		
+		
+	}	
+	
     void Start () {
-
-     //   this.testStartRoutine();   
-
+		setMessageLine("Hello, "+UserInfo.getPlayerName()+"! Good luck on your adventure!");
     }
 	
 	void OnGUI () {
 		
+		GUI.BeginGroup (new Rect (0,0,screenWidth*.2f, (float) screenHeight));
+		GUI.Box (new Rect (0,0,(float) screenWidth*.2f,(float) screenHeight),UserInfo.getPlayerName());
+		GUI.Label(new Rect (10,10,100,20),"Inventory: "+dungeon.GetComponent<DungeonCode>().getPlayerInventory(MainGameCode.getLevel()).Count);
+		GUI.EndGroup ();
 	}
 	
    	void Update () {
@@ -37,10 +48,15 @@ public class UserInterfaceCode : MonoBehaviour {
 			if (Input.GetKeyDown(KeyCode.Keypad3) || Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.PageDown)	    	) SendCommand(COMMAND.DOWNRIGHT);
 			if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.F9) || Input.GetKeyDown(KeyCode.KeypadPeriod) ||
 				Input.GetKeyDown(KeyCode.Delete)																				) SendCommand(COMMAND.WAIT);
-
+			if (Input.GetKeyDown(KeyCode.Comma)																					) SendCommand(COMMAND.PICKUP);
+			if (Input.GetKeyDown(KeyCode.P)																						) SendCommand(COMMAND.DROP);
 		}
 		
 	}
+	
+	public void setMessageLine(string messageText) {
+		messageLine.GetComponent<GUIText>().text=messageText;
+	}	
 	
 	void SendCommand(COMMAND inputCommand) {
 		

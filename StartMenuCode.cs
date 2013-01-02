@@ -25,7 +25,7 @@ public class StartMenuCode : MonoBehaviour {
 		}		
 		if (GUI.Button (new Rect (10,210,150,100), "New Game")) {
 			print ("start a new game");
-			Application.LoadLevel ("main"); 
+			Application.LoadLevel ("charactercreation"); 
 		}
 		if (GUI.Button (new Rect (10,310,150,100), "Load Game")) {
 			print ("go to load game screen");
@@ -41,3 +41,15 @@ public class StartMenuCode : MonoBehaviour {
 		}			
 	}	
 }
+
+public class UserInfo {
+	static string playerName="Adventuro";
+	
+	public static void setPlayerName(string nameToSet) {
+		playerName=nameToSet;	
+	}
+	
+	public static string getPlayerName() {
+		return playerName;	
+	}	
+}	
