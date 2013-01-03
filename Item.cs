@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public enum ITEMTYPE { WEAPON, ARMOR, FOOD };
+public enum ITEMTYPE { WEAPON, ARMOR, FOOD, IDCARD };
 
 public class Item  {
 	

@@ -8,10 +8,8 @@ public class Location {
 	Vector2 coords;
 	List<Item> items=new List<Item>();
 	
-
 	GameObject locationDisplayObject;
 	static GameObject displayHolder;
-	
 	
 	List<Agent> occupants=new List<Agent>();
 	
@@ -50,6 +48,14 @@ public class Location {
 	
 	public void addOccupant(Agent occupantToAdd) {
 		occupants.Add(occupantToAdd);
+	}
+	
+	public void removeOccupant(Agent occupantToRemove) {
+		occupants.Remove(occupantToRemove);
+	}	
+	
+	public List<Agent> getOccupants() {
+		return occupants;	
 	}	
 	
 	public TILETYPE getTile() {

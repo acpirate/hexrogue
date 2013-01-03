@@ -7,6 +7,8 @@ public class Level {
 	public static int levelSizeY=20;
 	
 	static GameObject displayHolder=null;
+	static GameObject dungeonHolder=null;
+	static GameObject userInterfaceHolder=null;
 	
 	int levelNumber=0;
 	
@@ -21,6 +23,8 @@ public class Level {
 	public Level(int levelToMake) {
 		
 		if (!(displayHolder)) displayHolder=GameObject.Find("Display");
+		if (!(dungeonHolder)) dungeonHolder=GameObject.Find("Dungeon");
+		if (!(userInterfaceHolder)) userInterfaceHolder=GameObject.Find("UserInterface");
 				
 		
 		for (int counterX=0; counterX<levelSizeX; counterX++) {
@@ -89,8 +93,8 @@ public class Level {
 			candidateX=Random.Range(0,levelSizeX);
 			candidateY=Random.Range(0,levelSizeY);
 			
-			if (isSpace(Locations[candidateX,candidateY])) {
-				unOccupiedFound=isUnoccupied(Locations[candidateX,candidateY]);
+			if (isSpace(Locations[candidateX,candidateY]) && Locations[candidateX,candidateY].getOccupants().Count==0) {
+				unOccupiedFound=true;
 			}	
 			
 		}
@@ -142,15 +146,17 @@ public class Level {
 		return tempAgent;
 	}
 		
-	public bool checkNeighbor(Location location, DIRECTION direction) {
-		bool validMove=false;
+	public MOVEOBSTACLETYPE checkNeighbor(Location location, DIRECTION direction) {
+		MOVEOBSTACLETYPE moveTarget=MOVEOBSTACLETYPE.WALL;
 		
 			Location neighborLocation = getNeighborLocation(location,direction);
-			if (neighborLocation!=null) {
-				if (isSpace(neighborLocation) && isUnoccupied(neighborLocation)) validMove=true;
+			if ((neighborLocation!=null) && (isSpace(neighborLocation))) {
+				if (neighborLocation.getOccupants().Count==0) {
+					moveTarget=MOVEOBSTACLETYPE.NONE; }
+				else moveTarget=MOVEOBSTACLETYPE.AGENT;
 			}
 		
-		return validMove;
+		return moveTarget;
 	}
 	
 
@@ -203,17 +209,6 @@ public class Level {
 	}		
 	
 	
-	public bool isUnoccupied(Location locationToCheck) {
-		bool unoccupied=true;
-		
-			foreach (Agent agent in Agents) {
-				Location tempLocation=agent.getLocation();
-					
-				if (tempLocation==locationToCheck) unoccupied=false;		
-			}
-		return unoccupied;
-	}	
-	
 	public bool isSpace(Location locationToCheck) {
 		bool isSpace=false;
 		
@@ -239,7 +234,7 @@ public class Level {
 	}	
 	
 	public void spawnMonsters() {
-		int numberOfMonsters=Random.Range(1,4);
+		int numberOfMonsters=Random.Range(5,10);
 		
 		for (int counter=0;counter<numberOfMonsters;counter++) {
 			Spawn(AGENTTYPE.MONSTER,getUnoccupiedLocation());	
@@ -256,7 +251,9 @@ public class Level {
 			case ITEMTYPE.FOOD :
 				itemLocation.addItem(new Item(ITEMTYPE.FOOD,"food"));
 			break;
-			
+			case ITEMTYPE.IDCARD :
+				itemLocation.addItem(new Item(ITEMTYPE.IDCARD,"ID card"));
+			break;
 		}
 	}
 	
@@ -265,8 +262,33 @@ public class Level {
 			
 		for (int counter=0;counter<numberOfItems;counter++) {
 			makeItem(ITEMTYPE.FOOD);	
-		}		
+		}
+		
+		if (levelNumber==DungeonCode.numLevels-1) {
+			makeItem(ITEMTYPE.IDCARD);
+		}
+		
 	}	
+	
+	public void processAttack(DIRECTION direction) {
+		Location playerLocation = Agents[Agents.Count-1].getLocation();
+		Location targetLocation = getNeighborLocation(playerLocation,direction);	
+		Agent target=targetLocation.getOccupants()[0];
+		
+		targetLocation.removeOccupant(target);
+		Agents.Remove(target);
+		DisplayCode.destroyDisplayObject(target);
+		userInterfaceHolder.GetComponent<UserInterfaceCode>().setMessageLine("You killed the "+target.getName()+"!");
+		
+		
+		//Debug.Log("player at "+playerLocation.getCoords()+" is attacking monster at "+targetLocation.getCoords());	
+		
+		
+		
+		
+	}	
+	
+	
 
 }
 

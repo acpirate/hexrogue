@@ -6,10 +6,11 @@ public enum TILETYPE {SPACE, WALL};
 public enum AGENTTYPE {PLAYER, ENDOFQUEUE, MONSTER};
 public enum FEATURETYPE {STAIRSDOWN, STAIRSUP, NOFEATURE};
 public enum DIRECTION {UPLEFT, UP, UPRIGHT, DOWNLEFT, DOWN, DOWNRIGHT};
+public enum MOVEOBSTACLETYPE {WALL, AGENT, NONE}; 
 
 public class DungeonCode: MonoBehaviour {
 	
-	public static int numLevels=11; 	//initially set to 11 so we have 10 levels and array index
+	public static int numLevels=3; 	//initially set to 11 so we have 10 levels and array index
 	public GameObject display;
 	public GameObject userinterface;
 	public GameObject main;
@@ -129,6 +130,7 @@ public class DungeonCode: MonoBehaviour {
 			userinterface.GetComponent<UserInterfaceCode>().setMessageLine("You drop the "+tempItem.getName()+"."); 
 			inventory.RemoveAt(0);
 			agentLocation.addItem(tempItem);
+			userinterface.GetComponent<UserInterfaceCode>().updateInventoryDisplay();
 		}
 		else {
 			userinterface.GetComponent<UserInterfaceCode>().setMessageLine("You don't have anything to drop!");	
@@ -145,7 +147,7 @@ public class DungeonCode: MonoBehaviour {
 		bool noDownStairs=false;
 		if(!(tempFeature==null)) {
 			if(tempFeature.getFeatureType()==FEATURETYPE.STAIRSDOWN) {
-					userinterface.GetComponent<UserInterfaceCode>().setMessageLine("You go down the stairs.");
+					userinterface.GetComponent<UserInterfaceCode>().setMessageLine("You go down the stairs to level "+(MainGameCode.getLevel()+1)+".");
 					main.GetComponent<MainGameCode>().GoDownStairs();	
 			}	
 			else noDownStairs=true;
@@ -167,10 +169,23 @@ public class DungeonCode: MonoBehaviour {
 			if(tempFeature.getFeatureType()==FEATURETYPE.STAIRSUP) {
 				
 				if (MainGameCode.getLevel()==1) {
-					main.GetComponent<MainGameCode>().WinGame();	
+					
+					Agent_Player playerHolder=(Agent_Player) agents[agents.Count-1];					
+					List<Item> tempInventory=playerHolder.getInventory();
+					bool hasIdCard=false;
+					
+					
+					foreach(Item item in tempInventory) {
+						if (item.getItemType()==ITEMTYPE.IDCARD) {	
+							hasIdCard=true;
+							break;
+						}
+					}
+					if (hasIdCard) { main.GetComponent<MainGameCode>().WinGame(); }
+						else  userinterface.GetComponent<UserInterfaceCode>().setMessageLine("You can't leave without the ID card!");
 				}	
 				else {
-				userinterface.GetComponent<UserInterfaceCode>().setMessageLine("You go up the stairs.");
+				userinterface.GetComponent<UserInterfaceCode>().setMessageLine("You go up the stairs to level "+(MainGameCode.getLevel()-1)+".");
 				main.GetComponent<MainGameCode>().GoUpStairs();
 				}	
 			}
@@ -220,7 +235,7 @@ public class DungeonCode: MonoBehaviour {
 		
 	}		
 	
-	bool validMove(DIRECTION direction) {
+	MOVEOBSTACLETYPE checkMoveObstacle(DIRECTION direction) {
 		
 		int currentLevel=MainGameCode.getLevel();
 		List<Agent> agents = Levels[currentLevel].getAgents();
@@ -230,13 +245,25 @@ public class DungeonCode: MonoBehaviour {
 	
 	void tryMove(DIRECTION direction) {
 
-		int currentLevel=MainGameCode.getLevel();
-		//List<Agent> agents = Levels[currentLevel].getAgents();		
+		int currentLevel=MainGameCode.getLevel();		
 		
-		if (validMove(direction)) {
-			Levels[currentLevel].moveActiveAgent(direction);
-		}
-		else userinterface.GetComponent<UserInterfaceCode>().setMessageLine("You can't move there.");
+		switch (checkMoveObstacle(direction)) {
+		
+			case MOVEOBSTACLETYPE.NONE:
+				Levels[currentLevel].moveActiveAgent(direction);
+				break;
+			case MOVEOBSTACLETYPE.WALL:
+				userinterface.GetComponent<UserInterfaceCode>().setMessageLine("There is a wall in the way.");	
+				break;
+			case MOVEOBSTACLETYPE.AGENT:
+				processAttack(direction);
+				break;
+		}	
+	}
+	
+	void processAttack(DIRECTION direction) {
+		Levels[MainGameCode.getLevel()].processAttack(direction);
+			
 	}
 	
 	public Feature getFeatureAtLocation(Location location) {
@@ -273,6 +300,10 @@ public class DungeonCode: MonoBehaviour {
 		}
 		
 		return inventory;
+	}	
+	
+	public void killAgent(Agent agentToKill) {
+		agentToKill.getLocation().removeOccupant(agentToKill);
 	}	
 	
 }

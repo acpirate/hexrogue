@@ -16,6 +16,8 @@ public class Agent {
 		agentName=inName;
 		agentLocation=inLocation;
 		
+		inLocation.addOccupant(this);
+		
 		if (!(userinterfaceHolder)) userinterfaceHolder=GameObject.Find("UserInterface");
 	}
 
@@ -70,7 +72,9 @@ public class Agent {
 	}
 	
 	public void MoveTo(Location moveLocation) {
+			agentLocation.removeOccupant(this);
 			agentLocation=moveLocation;
+			moveLocation.addOccupant(this);
 		
 	}
 	

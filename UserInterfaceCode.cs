@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public enum COMMAND { UPLEFT, UP, UPRIGHT, DOWNLEFT, DOWN, DOWNRIGHT, WAIT, DESCENDSTAIRS, ASCENDSTAIRS, PICKUP, DROP };
 
@@ -14,7 +15,11 @@ public class UserInterfaceCode : MonoBehaviour {
 	
 	bool isPlayerTurn=false;
 	
-    // Use this for initialization
+	string inventoryDisplay="";
+	
+	int duplicateMessageCounter=1;
+	
+	// Use this for initialization
 	
 	void Awake() {
 		
@@ -29,9 +34,37 @@ public class UserInterfaceCode : MonoBehaviour {
 		
 		GUI.BeginGroup (new Rect (0,0,screenWidth*.2f, (float) screenHeight));
 		GUI.Box (new Rect (0,0,(float) screenWidth*.2f,(float) screenHeight),UserInfo.getPlayerName());
-		GUI.Label(new Rect (10,10,100,20),"Inventory: "+dungeon.GetComponent<DungeonCode>().getPlayerInventory(MainGameCode.getLevel()).Count);
+		GUI.Label(new Rect (10,20,500,20),"Dungeon Level: "+MainGameCode.getLevel());
+		GUI.Label(new Rect (10,50,500,500),"Inventory:\n"+inventoryDisplay);
 		GUI.EndGroup ();
 	}
+	
+	
+	public void updateInventoryDisplay() {
+		
+		inventoryDisplay="";
+		List<Item> tempInventory = dungeon.GetComponent<DungeonCode>().getPlayerInventory(MainGameCode.getLevel());
+		
+		Dictionary<string,int> inventoryCount = new Dictionary<string,int>();
+
+		
+		
+		foreach (Item item in tempInventory) {
+			if (!(inventoryCount.ContainsKey(item.getName()))) {
+				inventoryCount[item.getName()]=1;
+			}
+			else {
+				inventoryCount[item.getName()]=(int) inventoryCount[item.getName()]+1;
+			}	
+			
+		}
+		foreach (KeyValuePair<string,int> countedItem in inventoryCount) {
+			
+			inventoryDisplay+=countedItem.Value+" "+countedItem.Key+"\n";
+			
+		}	
+			
+	}	
 	
    	void Update () {
 		
@@ -55,6 +88,19 @@ public class UserInterfaceCode : MonoBehaviour {
 	}
 	
 	public void setMessageLine(string messageText) {
+		string currentMessage=messageLine.GetComponent<GUIText>().text;
+		
+		if (duplicateMessageCounter>1) {
+			currentMessage=currentMessage.Split('(')[0];
+			currentMessage=currentMessage.Trim();
+		}	
+		
+		if (messageText==currentMessage) {
+			duplicateMessageCounter++;
+		}	
+		else duplicateMessageCounter=1;
+		
+		if (duplicateMessageCounter>1) messageText+=" (x"+duplicateMessageCounter+")";
 		messageLine.GetComponent<GUIText>().text=messageText;
 	}	
 	

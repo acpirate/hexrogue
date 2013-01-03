@@ -19,6 +19,7 @@ public class Agent_Player : Agent {
 	
 	public void addToInventory(Item itemToAdd) {
 		inventory.Add(itemToAdd);
+		userinterfaceHolder.GetComponent<UserInterfaceCode>().updateInventoryDisplay();
 	}
 	
 	public List<Item> getInventory() {

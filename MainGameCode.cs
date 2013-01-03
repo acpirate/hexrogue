@@ -31,7 +31,7 @@ public class MainGameCode : MonoBehaviour {
 	}	
 	
 	void AddPlayerToDungeon() {	
-		dungeon.GetComponent<DungeonCode>().Spawn(currentLevel, AGENTTYPE.PLAYER, dungeon.GetComponent<DungeonCode>().getEmptyLocation(currentLevel));	
+		dungeon.GetComponent<DungeonCode>().Spawn(currentLevel, AGENTTYPE.PLAYER, dungeon.GetComponent<DungeonCode>().getLocationOfFeature(currentLevel, FEATURETYPE.STAIRSUP));	
 
 	}
 	

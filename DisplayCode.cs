@@ -15,6 +15,7 @@ public class DisplayCode : MonoBehaviour {
 	public GameObject monster;
 	public GameObject food;
 	public GameObject stairsup;
+	public GameObject idcard;
 	//magic number to adjust camera so player stays centered in screen with gui
 	public int cameraOffset;
 	       
@@ -174,6 +175,12 @@ public class DisplayCode : MonoBehaviour {
 			//adjust the y position so the object is drawn above the floor
 			tempGameObject.transform.position=new Vector3(0,.5f,0);
 			break;
+			case ITEMTYPE.IDCARD:
+			
+			tempGameObject=(GameObject) Instantiate(idcard);
+			//adjust the y position so the object is drawn above the floor
+			tempGameObject.transform.position=new Vector3(0,.5f,0);
+			break;			
 		}
 		
 		return tempGameObject;
@@ -249,5 +256,9 @@ public class DisplayCode : MonoBehaviour {
 		return new Vector2(tempX, tempY);
 		
 	}		
+	
+	public static void destroyDisplayObject(Agent agent) {
+		Destroy(agent.getDisplayObject());	
+	}	
 	
 }
