@@ -28,6 +28,7 @@ public class UserInterfaceCode : MonoBehaviour {
 	
     void Start () {
 		setMessageLine("Hello, "+UserInfo.getPlayerName()+"! Good luck on your adventure!");
+		updateInventoryDisplay();
     }
 	
 	void OnGUI () {
@@ -35,7 +36,8 @@ public class UserInterfaceCode : MonoBehaviour {
 		GUI.BeginGroup (new Rect (0,0,screenWidth*.2f, (float) screenHeight));
 		GUI.Box (new Rect (0,0,(float) screenWidth*.2f,(float) screenHeight),UserInfo.getPlayerName());
 		GUI.Label(new Rect (10,20,500,20),"Dungeon Level: "+MainGameCode.getLevel());
-		GUI.Label(new Rect (10,50,500,500),"Inventory:\n"+inventoryDisplay);
+		GUI.Label(new Rect (10,50,500,20),"Health: "+dungeon.GetComponent<DungeonCode>().getPlayerHealth());
+		GUI.Label(new Rect (10,80,500,500),"Inventory:\n"+inventoryDisplay);
 		GUI.EndGroup ();
 	}
 	
@@ -62,7 +64,8 @@ public class UserInterfaceCode : MonoBehaviour {
 			
 			inventoryDisplay+=countedItem.Value+" "+countedItem.Key+"\n";
 			
-		}	
+		}
+		if (inventoryDisplay=="") inventoryDisplay="You have nothing.";
 			
 	}	
 	

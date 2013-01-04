@@ -5,6 +5,7 @@ using System.Collections.Generic;
 public class Agent_Player : Agent {
 	
 	List<Item> inventory= new List<Item>();
+	int health=10;
 		
 	public Agent_Player(AGENTTYPE inType, string inName, Location inLocation) 
 		: base (inType,inName,inLocation) {
@@ -24,6 +25,14 @@ public class Agent_Player : Agent {
 	
 	public List<Item> getInventory() {
 		return inventory;
+	}
+	
+	public int getHealth() {
+		return health;	
+	}
+	
+	public void takeDamage() {
+		health--;	
 	}	
 	
 }

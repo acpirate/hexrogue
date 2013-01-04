@@ -304,6 +304,10 @@ public class DungeonCode: MonoBehaviour {
 	
 	public void killAgent(Agent agentToKill) {
 		agentToKill.getLocation().removeOccupant(agentToKill);
+	}
+	
+	public int getPlayerHealth() {
+		return Levels[MainGameCode.getLevel()].getPlayerHealth();	
 	}	
 	
 }

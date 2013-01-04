@@ -4,7 +4,7 @@ using System.Collections;
 public class Agent {
 	AGENTTYPE agenttype;
 	string agentName="";
-	Location agentLocation=new Location(new Vector2(-1,-1)); //make into location object
+	Location agentLocation=null; //make into location object
 	GameObject agentDisplayObject=null;
 	int energy=1000;
 	public static GameObject userinterfaceHolder=null;

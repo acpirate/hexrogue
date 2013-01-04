@@ -29,7 +29,7 @@ public class Level {
 		
 		for (int counterX=0; counterX<levelSizeX; counterX++) {
 			for (int counterY=0;counterY<levelSizeY; counterY++) {
-				Locations[counterX,counterY]= new Location(new Vector2((float) counterX, (float) counterY));
+				Locations[counterX,counterY]= new Location(new Vector2((float) counterX, (float) counterY),this);
 			}
 		}
 		//add end of queue to agent list
@@ -46,7 +46,7 @@ public class Level {
 	void MakeStairs() {
 		//0 index arrays, bah
 		// make down stairs, 1 per level except for the last level
-		Location downStairsLocation=new Location(new Vector2(-1,-1));
+		Location downStairsLocation=null;
 		
 		if (levelNumber!=DungeonCode.numLevels-1) {
 			downStairsLocation=getEmptyLocation();
@@ -236,8 +236,16 @@ public class Level {
 	public void spawnMonsters() {
 		int numberOfMonsters=Random.Range(5,10);
 		
-		for (int counter=0;counter<numberOfMonsters;counter++) {
-			Spawn(AGENTTYPE.MONSTER,getUnoccupiedLocation());	
+		for (int counter=0;counter<numberOfMonsters;counter++) 
+		{
+			Location tempLocation=null;
+			
+			while (tempLocation==null) {
+				tempLocation=getUnoccupiedLocation();
+				if (tempLocation.getFeature()!=null && tempLocation.getFeature().getFeatureType()==FEATURETYPE.STAIRSUP) tempLocation=null;
+			}	
+			
+			Spawn(AGENTTYPE.MONSTER,tempLocation);	
 		}
 	}	
 	
@@ -288,7 +296,18 @@ public class Level {
 		
 	}	
 	
-	
+	public int getPlayerHealth() {
+		int playerHealth=0;
+		
+		foreach(Agent agent in Agents) {
+			if (agent.getAgentType()==AGENTTYPE.PLAYER) {
+				Agent_Player tempPlayer = (Agent_Player) agent;
+				playerHealth=tempPlayer.getHealth();
+			}	
+		}
+		
+		return playerHealth;
+	}	
 
 }
 

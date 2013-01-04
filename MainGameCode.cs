@@ -53,7 +53,8 @@ public class MainGameCode : MonoBehaviour {
 	
 	//This is the main game loop, if it isn't the players turn walk through the agent queue of the current level
 	void Update () {
-	
+		if (dungeon.GetComponent<DungeonCode>().getPlayerHealth()<1) LoseGame();
+		
 		while (!(userinterface.GetComponent<UserInterfaceCode>().PlayerTurnCheck())) {
 			display.GetComponent<DisplayCode>().DrawAgents(currentLevel);
 			MoveCameraAbovePlayer();
@@ -123,6 +124,11 @@ public class MainGameCode : MonoBehaviour {
 	public void WinGame() {
 		currentLevel=1;
 		Application.LoadLevel ("win"); 	
+	}	
+	
+	public void LoseGame() {
+		currentLevel=1;
+		Application.LoadLevel ("lose"); 	
 	}	
 	
 	public static int getLevel() {

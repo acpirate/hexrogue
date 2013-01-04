@@ -21,6 +21,15 @@ public class TutorialCode: MonoBehaviour {
 		if (GUI.Button (new Rect (10,110,150,100), "Back to menu")) {
 			print("hit back button");
 			Application.LoadLevel ("startmenu"); 
-		}		
+		}
+		GUI.Label(new Rect(200,200,1000,1000),
+			
+			"Your goal is to retrieve the ID card from the last level and escape the facility\n\n"+"Controls:\n"+
+			"Move: QWEASD or 789123(numberpad)\n" +
+			"Pickup: , (comma)\n" +
+			"Drop: p\n" +
+			"Ascend Stairs: [\n" +
+			"Descend Stairs: ]\n" +
+			"Wait: (spacebar)");
 	}	
 }
